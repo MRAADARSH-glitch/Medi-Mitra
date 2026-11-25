@@ -123,4 +123,4 @@ Flask (`backend/app.py`, port 5000):
 - Location-based hospital and bank search using the stored latitude and longitude
 - Real-time chat with doctors
 - A smarter chatbot (machine learning or an AI service) for better symptom detection
-- Add screenshots of each page to this README
+
