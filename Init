@@ -1,0 +1,21 @@
+One-time setup, in the project folder
+
+npm install
+pip install flask flask-cors
+
+
+Terminal 1: the main app
+
+Port 5000 is taken by the chatbot server, so the main app has to run on a different port.
+
+Windows (Command Prompt):
+set PORT=3000 && npm run dev
+Windows (PowerShell):
+$env:PORT=3000; npm run dev
+
+Terminal 2: the chatbot server
+
+Open a new terminal window, go to the same project folder, then run:
+
+cd backend
+python app.py
