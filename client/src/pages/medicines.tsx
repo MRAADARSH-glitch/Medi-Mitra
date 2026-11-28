@@ -1,3 +1,4 @@
+import { formatINR } from "@/lib/utils";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
@@ -71,7 +72,7 @@ function MedicineCard({
             </div>
 
             <div className="text-right">
-              <p className="font-bold text-lg">${medicine.price}</p>
+              <p className="font-bold text-lg">{formatINR(medicine.price)}</p>
 
               {medicine.prescriptionRequired === 1 && (
                 <Badge variant="destructive">Rx Required</Badge>

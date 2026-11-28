@@ -1,0 +1,244 @@
+diff --git a/client/src/components/ChatBot.tsx b/client/src/components/ChatBot.tsx
+index 20ad1ec..a2befd5 100644
+--- a/client/src/components/ChatBot.tsx
++++ b/client/src/components/ChatBot.tsx
+@@ -11,9 +11,10 @@ export default function ChatBot() {
+ 
+     const userMsg = { sender: "user", text: message };
+     setChat(prev => [...prev, userMsg]);
++    setMessage("");
+ 
+     try {
+-      const res = await fetch("http://127.0.0.1:5000/chat", {
++      const res = await fetch("http://127.0.0.1:5000/api/emergency/chat", {
+         method: "POST",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({ message })
+@@ -22,10 +23,13 @@ export default function ChatBot() {
+       const data = await res.json();
+ 
+       setChat(prev => [...prev, { sender: "bot", text: data.reply }]);
+-      setMessage("");
+ 
+     } catch (error) {
+       console.error(error);
++      setChat(prev => [
++        ...prev,
++        { sender: "bot", text: "Server error. Please try again or seek medical help." },
++      ]);
+     }
+   };
+ 
+@@ -35,7 +39,7 @@ export default function ChatBot() {
+ 
+       <div className="h-60 overflow-y-auto border p-2 mb-2">
+         {chat.map((c, i) => (
+-          <p key={i} className={c.sender === "user" ? "text-right" : ""}>
++          <p key={i} className={`whitespace-pre-wrap ${c.sender === "user" ? "text-right" : ""}`}>
+             {c.text}
+           </p>
+         ))}
+@@ -46,6 +50,7 @@ export default function ChatBot() {
+           className="border flex-1 p-1 rounded"
+           value={message}
+           onChange={(e) => setMessage(e.target.value)}
++          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+         />
+         <button
+           onClick={sendMessage}
+diff --git a/client/src/lib/utils.ts b/client/src/lib/utils.ts
+index bd0c391..095dc7f 100644
+--- a/client/src/lib/utils.ts
++++ b/client/src/lib/utils.ts
+@@ -4,3 +4,16 @@ import { twMerge } from "tailwind-merge"
+ export function cn(...inputs: ClassValue[]) {
+   return twMerge(clsx(inputs))
+ }
++
++const inrFormatter = new Intl.NumberFormat("en-IN", {
++  style: "currency",
++  currency: "INR",
++  minimumFractionDigits: 0,
++  maximumFractionDigits: 2,
++});
++
++/** Format a number or numeric string as Indian rupees, e.g. ₹1,500 */
++export function formatINR(value: number | string | null | undefined): string {
++  const n = Number(value);
++  return inrFormatter.format(Number.isFinite(n) ? n : 0);
++}
+diff --git a/client/src/pages/blood-banks.tsx b/client/src/pages/blood-banks.tsx
+index 8615a35..a5b94d0 100644
+--- a/client/src/pages/blood-banks.tsx
++++ b/client/src/pages/blood-banks.tsx
+@@ -1,3 +1,4 @@
++import { formatINR } from "@/lib/utils";
+ import { useState } from "react";
+ import { useQuery } from "@tanstack/react-query";
+ import { 
+@@ -162,7 +163,7 @@ export default function BloodBanks() {
+                   </div>
+                   <div className="text-right">
+                     <div className="text-sm text-muted-foreground">Price/Unit</div>
+-                    <div className="text-xl font-bold text-primary">${bank.pricePerUnit}</div>
++                    <div className="text-xl font-bold text-primary">{formatINR(bank.pricePerUnit)}</div>
+                   </div>
+                 </div>
+               </CardHeader>
+diff --git a/client/src/pages/cart.tsx b/client/src/pages/cart.tsx
+index 5017869..c2cd26e 100644
+--- a/client/src/pages/cart.tsx
++++ b/client/src/pages/cart.tsx
+@@ -1,3 +1,4 @@
++import { formatINR } from "@/lib/utils";
+ import { useCart } from "@/context/CartContext";
+ import { Card, CardTitle } from "@/components/ui/card";
+ import { Button } from "@/components/ui/button";
+@@ -50,7 +51,7 @@ export default function CartPage() {
+             <div>
+               <p>{item.name}</p>
+               <p>
+-                ${item.price} × {item.quantity}
++                {formatINR(item.price)} × {item.quantity}
+               </p>
+             </div>
+ 
+@@ -75,7 +76,7 @@ export default function CartPage() {
+         ))}
+ 
+         <p className="text-right font-bold mt-4">
+-          Total: ${total.toFixed(2)}
++          Total: {formatINR(total)}
+         </p>
+ 
+         <div className="space-y-3 mt-6">
+diff --git a/client/src/pages/doctors.tsx b/client/src/pages/doctors.tsx
+index 0982ffd..e1f9fc2 100644
+--- a/client/src/pages/doctors.tsx
++++ b/client/src/pages/doctors.tsx
+@@ -1,3 +1,4 @@
++import { formatINR } from "@/lib/utils";
+ import { useState } from "react";
+ import { useQuery } from "@tanstack/react-query";
+ import {
+@@ -216,7 +217,7 @@ export default function Doctors() {
+ 
+               <div className="flex items-center justify-between pt-3 border-t mt-3">
+                 <p className="text-lg font-semibold text-primary">
+-                  ${doctor.consultationFee}
++                  {formatINR(doctor.consultationFee)}
+                 </p>
+ 
+                 {/* Book Appointment Popup */}
+diff --git a/client/src/pages/medicines.tsx b/client/src/pages/medicines.tsx
+index 138116b..65c288b 100644
+--- a/client/src/pages/medicines.tsx
++++ b/client/src/pages/medicines.tsx
+@@ -1,3 +1,4 @@
++import { formatINR } from "@/lib/utils";
+ import { useState } from "react";
+ import { useLocation } from "wouter";
+ import { useQuery } from "@tanstack/react-query";
+@@ -71,7 +72,7 @@ function MedicineCard({
+             </div>
+ 
+             <div className="text-right">
+-              <p className="font-bold text-lg">${medicine.price}</p>
++              <p className="font-bold text-lg">{formatINR(medicine.price)}</p>
+ 
+               {medicine.prescriptionRequired === 1 && (
+                 <Badge variant="destructive">Rx Required</Badge>
+diff --git a/client/src/pages/platelet-banks.tsx b/client/src/pages/platelet-banks.tsx
+index 8dc4e6a..a01ad87 100644
+--- a/client/src/pages/platelet-banks.tsx
++++ b/client/src/pages/platelet-banks.tsx
+@@ -1,3 +1,4 @@
++import { formatINR } from "@/lib/utils";
+ import { useState } from "react";
+ import { useQuery } from "@tanstack/react-query";
+ import { 
+@@ -145,7 +146,7 @@ export default function PlateletBanks() {
+                   </div>
+                   <div className="text-right">
+                     <div className="text-sm text-muted-foreground">Price/Unit</div>
+-                    <div className="text-xl font-bold text-primary">${bank.pricePerUnit}</div>
++                    <div className="text-xl font-bold text-primary">{formatINR(bank.pricePerUnit)}</div>
+                   </div>
+                 </div>
+               </CardHeader>
+diff --git a/client/src/pages/sperm-banks.tsx b/client/src/pages/sperm-banks.tsx
+index 618cceb..261f8f5 100644
+--- a/client/src/pages/sperm-banks.tsx
++++ b/client/src/pages/sperm-banks.tsx
+@@ -1,3 +1,4 @@
++import { formatINR } from "@/lib/utils";
+ import { useState } from "react";
+ import { useQuery } from "@tanstack/react-query";
+ import { 
+@@ -146,7 +147,7 @@ export default function SpermBanks() {
+                   </div>
+                   <div className="text-right">
+                     <div className="text-sm text-muted-foreground">Price/Vial</div>
+-                    <div className="text-xl font-bold text-primary">${bank.pricePerVial}</div>
++                    <div className="text-xl font-bold text-primary">{formatINR(bank.pricePerVial)}</div>
+                   </div>
+                 </div>
+               </CardHeader>
+diff --git a/server/routes.ts b/server/routes.ts
+index 02e608d..7b40719 100644
+--- a/server/routes.ts
++++ b/server/routes.ts
+@@ -82,6 +82,15 @@ export async function registerRoutes(
+     }
+   });
+ 
++  // Must be registered before "/api/hospitals/:id" or it is shadowed
++  app.get("/api/hospitals/emergency", async (req, res) => {
++    try {
++      res.json(await storage.getEmergencyHospitals());
++    } catch {
++      res.status(500).json({ error: "Failed to fetch emergency hospitals" });
++    }
++  });
++
+   app.get("/api/hospitals/:id", async (req, res) => {
+     try {
+       const hospital = await storage.getHospitalById(parseInt(req.params.id));
+@@ -92,20 +101,30 @@ export async function registerRoutes(
+     }
+   });
+ 
+-  app.get("/api/hospitals/emergency", async (req, res) => {
++  // Blood Banks
++  app.get("/api/blood-banks", async (req, res) => {
+     try {
+-      res.json(await storage.getEmergencyHospitals());
++      res.json(await storage.getAllBloodBanks());
+     } catch {
+-      res.status(500).json({ error: "Failed to fetch emergency hospitals" });
++      res.status(500).json({ error: "Failed to fetch blood banks" });
+     }
+   });
+ 
+-  // Blood Banks
+-  app.get("/api/blood-banks", async (req, res) => {
++  // Sperm Banks
++  app.get("/api/sperm-banks", async (req, res) => {
+     try {
+-      res.json(await storage.getAllBloodBanks());
++      res.json(await storage.getAllSpermBanks());
+     } catch {
+-      res.status(500).json({ error: "Failed to fetch blood banks" });
++      res.status(500).json({ error: "Failed to fetch sperm banks" });
++    }
++  });
++
++  // Platelet Banks
++  app.get("/api/platelet-banks", async (req, res) => {
++    try {
++      res.json(await storage.getAllPlateletBanks());
++    } catch {
++      res.status(500).json({ error: "Failed to fetch platelet banks" });
+     }
+   });
+ 

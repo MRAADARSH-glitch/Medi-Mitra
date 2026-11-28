@@ -1,3 +1,4 @@
+import { formatINR } from "@/lib/utils";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { 
@@ -146,7 +147,7 @@ export default function SpermBanks() {
                   </div>
                   <div className="text-right">
                     <div className="text-sm text-muted-foreground">Price/Vial</div>
-                    <div className="text-xl font-bold text-primary">${bank.pricePerVial}</div>
+                    <div className="text-xl font-bold text-primary">{formatINR(bank.pricePerVial)}</div>
                   </div>
                 </div>
               </CardHeader>

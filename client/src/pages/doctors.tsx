@@ -1,3 +1,4 @@
+import { formatINR } from "@/lib/utils";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -216,7 +217,7 @@ export default function Doctors() {
 
               <div className="flex items-center justify-between pt-3 border-t mt-3">
                 <p className="text-lg font-semibold text-primary">
-                  ${doctor.consultationFee}
+                  {formatINR(doctor.consultationFee)}
                 </p>
 
                 {/* Book Appointment Popup */}

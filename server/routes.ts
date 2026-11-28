@@ -82,6 +82,15 @@ export async function registerRoutes(
     }
   });
 
+  // Must be registered before "/api/hospitals/:id" or it is shadowed
+  app.get("/api/hospitals/emergency", async (req, res) => {
+    try {
+      res.json(await storage.getEmergencyHospitals());
+    } catch {
+      res.status(500).json({ error: "Failed to fetch emergency hospitals" });
+    }
+  });
+
   app.get("/api/hospitals/:id", async (req, res) => {
     try {
       const hospital = await storage.getHospitalById(parseInt(req.params.id));
@@ -92,20 +101,30 @@ export async function registerRoutes(
     }
   });
 
-  app.get("/api/hospitals/emergency", async (req, res) => {
-    try {
-      res.json(await storage.getEmergencyHospitals());
-    } catch {
-      res.status(500).json({ error: "Failed to fetch emergency hospitals" });
-    }
-  });
-
   // Blood Banks
   app.get("/api/blood-banks", async (req, res) => {
     try {
       res.json(await storage.getAllBloodBanks());
     } catch {
       res.status(500).json({ error: "Failed to fetch blood banks" });
+    }
+  });
+
+  // Sperm Banks
+  app.get("/api/sperm-banks", async (req, res) => {
+    try {
+      res.json(await storage.getAllSpermBanks());
+    } catch {
+      res.status(500).json({ error: "Failed to fetch sperm banks" });
+    }
+  });
+
+  // Platelet Banks
+  app.get("/api/platelet-banks", async (req, res) => {
+    try {
+      res.json(await storage.getAllPlateletBanks());
+    } catch {
+      res.status(500).json({ error: "Failed to fetch platelet banks" });
     }
   });
 

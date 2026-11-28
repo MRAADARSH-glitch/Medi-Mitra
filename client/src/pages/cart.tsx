@@ -1,3 +1,4 @@
+import { formatINR } from "@/lib/utils";
 import { useCart } from "@/context/CartContext";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -50,7 +51,7 @@ export default function CartPage() {
             <div>
               <p>{item.name}</p>
               <p>
-                ${item.price} × {item.quantity}
+                {formatINR(item.price)} × {item.quantity}
               </p>
             </div>
 
@@ -75,7 +76,7 @@ export default function CartPage() {
         ))}
 
         <p className="text-right font-bold mt-4">
-          Total: ${total.toFixed(2)}
+          Total: {formatINR(total)}
         </p>
 
         <div className="space-y-3 mt-6">

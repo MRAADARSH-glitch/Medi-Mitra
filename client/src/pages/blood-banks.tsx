@@ -1,3 +1,4 @@
+import { formatINR } from "@/lib/utils";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { 
@@ -162,7 +163,7 @@ export default function BloodBanks() {
                   </div>
                   <div className="text-right">
                     <div className="text-sm text-muted-foreground">Price/Unit</div>
-                    <div className="text-xl font-bold text-primary">${bank.pricePerUnit}</div>
+                    <div className="text-xl font-bold text-primary">{formatINR(bank.pricePerUnit)}</div>
                   </div>
                 </div>
               </CardHeader>
